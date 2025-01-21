@@ -48,7 +48,7 @@ void FProbability::Modify(float Modifier, EModificationType ModType)
 			Probability *= Modifier;
 			break;
 		case Power:
-			pow(Probability, Modifier);
+			Probability = pow(Probability, Modifier);
 			break;
 	}
 }

@@ -30,5 +30,5 @@ public:
 	
 protected:
 	UPROPERTY()
-	TArray<UReplicatedObject*> ReplicatedObjects;
+	TArray<TObjectPtr<UReplicatedObject>> ReplicatedObjects;
 };
