@@ -1,5 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -54,6 +52,16 @@ protected:
 	bool bAllowVisual = true;
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Settings|AllowedDebugTypes")
 	bool bAllowSound = true;
+
+	//Defaults
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Settings|Defaults")
+	bool bLogByDefault = true;
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Settings|Defaults")
+	bool bPrintByDefault = false;
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Settings|Defaults")
+	bool bVisualByDefault = false;
+	UPROPERTY(Config, EditAnywhere, Category = "Debug Settings|Defaults")
+	bool bSoundByDefault = false;
 	
 	UPROPERTY(Config, EditAnywhere, Category = "Debug Settings", meta = (ForceInlineRow))
 	TMap<FGameplayTag, FDebugConfig> ShownDebugConfigs;
