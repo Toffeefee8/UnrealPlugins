@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "DebugFunctionLibrary.h"
 #include "DebugSettings.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -61,8 +58,12 @@ void UDebugFunctionLibrary::DebugString(
 		Key);
 }
 
-void UDebugFunctionLibrary::DebugError(const UObject* WorldContextObject, const FString& ErrorMessage, const bool bPrintToScreen,
-	const bool bPrintToLog)
+void UDebugFunctionLibrary::ThrowError(const UObject* WorldContextObject, const FString& ErrorMessage, const bool bPrintToScreen, const bool bPrintToLog)
+{
+	DebugError(WorldContextObject, ErrorMessage, bPrintToScreen, bPrintToLog);
+}
+
+void UDebugFunctionLibrary::DebugError(const UObject* WorldContextObject, const FString& ErrorMessage, const bool bPrintToScreen, const bool bPrintToLog)
 {
 		if (const UDebugSettings* Settings = GetDefault<UDebugSettings>())
 		{
@@ -130,5 +131,15 @@ void UDebugFunctionLibrary::DebugDrawString(const UObject* WorldContextObject, c
 {
 	if (ShouldDebug(DebugTag, EDebugDisplayType::Visual))
 		UKismetSystemLibrary::DrawDebugString(WorldContextObject,TextLocation,Text,TestBaseActor,TextColor,Duration);
+}
+
+FString UDebugFunctionLibrary::GetAdditivePIEText()
+{
+	FString Text = "";
+#if WITH_EDITOR
+	int32 PIENumber = UE::GetPlayInEditorID();
+	Text = FString::Printf(TEXT(" [PIE_%d]"), PIENumber);
+#endif
+	return Text;
 }
 

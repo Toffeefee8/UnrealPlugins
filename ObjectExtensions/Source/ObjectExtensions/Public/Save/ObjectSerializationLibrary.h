@@ -1,10 +1,9 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Enums/SuccessType.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Templates/TypeHash.h"
 #include "ObjectSerializationLibrary.generated.h"
 
 DECLARE_LOG_CATEGORY_CLASS(ObjectSerializationLog, Log, All)
@@ -15,6 +14,11 @@ class FMemoryReader;
 USTRUCT(BlueprintType)
 struct OBJECTEXTENSIONS_API FObjectData
 {
+	friend uint32 GetTypeHash(const FObjectData& Arg)
+	{
+		return GetTypeHash(Arg.ObjectClass);
+	}
+
 	GENERATED_BODY()
 
 public:

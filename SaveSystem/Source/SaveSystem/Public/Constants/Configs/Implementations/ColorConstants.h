@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Constants/Configs/ConstantConfigs.h"
@@ -13,7 +11,7 @@ class SAVESYSTEM_API UColorConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FColor GetConstantColor(FGameplayTag ColorTag);
 
 protected:

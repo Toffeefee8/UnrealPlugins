@@ -1,6 +1,8 @@
 ﻿#include "ObjectExtensionsEditor.h"
 
 #include "Common/CompactRowEditor.h"
+#include "ObjectWrapper/ObjectWrapperArrayEditor.h"
+#include "ObjectWrapper/ObjectWrapperEditor.h"
 #include "Structs/ValueRangeEditor.h"
 
 #define LOCTEXT_NAMESPACE "FObjectExtensionsEditorModule"
@@ -14,6 +16,9 @@ void FObjectExtensionsEditorModule::StartupModule()
 
 	PropertyEditorModule.RegisterCustomPropertyTypeLayout("ValueRangeInt", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FValueRangeEditor::MakeInstance));
 	PropertyEditorModule.RegisterCustomPropertyTypeLayout("ValueRangeFloat", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FValueRangeEditor::MakeInstance));
+	
+	PropertyEditorModule.RegisterCustomPropertyTypeLayout("ObjectWrapper", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FObjectWrapperEditor::MakeInstance));
+	PropertyEditorModule.RegisterCustomPropertyTypeLayout("ObjectWrapperArray", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FObjectWrapperArrayEditor::MakeInstance));
 }
 
 void FObjectExtensionsEditorModule::ShutdownModule()
@@ -25,6 +30,9 @@ void FObjectExtensionsEditorModule::ShutdownModule()
 
 	PropertyEditorModule.UnregisterCustomPropertyTypeLayout("ValueRangeInt");
 	PropertyEditorModule.UnregisterCustomPropertyTypeLayout("ValueRangeFloat");
+
+	PropertyEditorModule.UnregisterCustomPropertyTypeLayout("ObjectWrapper");
+	PropertyEditorModule.UnregisterCustomPropertyTypeLayout("ObjectWrapperArray");
 }
 
 #undef LOCTEXT_NAMESPACE

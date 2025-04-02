@@ -1,5 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -82,7 +80,7 @@ protected:
 	void VerifyAllConstants();
 
 	UPROPERTY(Transient)
-	TArray<UConstantsDataAsset*> Constants {};
+	TArray<TObjectPtr<UConstantsDataAsset>> Constants {};
 	
 #pragma endregion
 	
@@ -102,7 +100,7 @@ protected:
 	void ClearObject(UObject* Object, FGameplayTag SaveType) const;
 
 	UPROPERTY(Transient)
-	mutable USoloSaveGame* LoadedSolos = nullptr;
+	mutable TObjectPtr<USoloSaveGame> LoadedSolos = nullptr;
 
 	void ReevaluateSolosForSave() const;
 	void ReevaluateLoadedSolos() const;

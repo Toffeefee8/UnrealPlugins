@@ -1,16 +1,20 @@
-﻿// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Modules/RegionModuleDefaults.h"
+#include "Structs/RegionTypes.h"
 #include "RegionSubsystem.generated.h"
 
+class URegionModule;
+class URegionTracker;
+class URegion;
 class ARegionVolume;
-/**
- * Region Subsystem that caches ARegionVolume instances
- */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRegionChange, URegion*, Region);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRegionRefresh);
+
 UCLASS()
 class REGIONSYSTEM_API URegionSubsystem : public UWorldSubsystem
 {
@@ -20,57 +24,112 @@ public:
 
 	static URegionSubsystem* Get(const UObject* WorldContextObject);
 
+	//Delegates
+	UPROPERTY(BlueprintAssignable)
+	FRegionChange OnRegionAdded;
+	UPROPERTY(BlueprintAssignable)
+	FRegionChange OnRegionRemoved;
+
+	UPROPERTY(BlueprintAssignable)
+	FRegionRefresh OnRegionRefresh;
+
 	//Helpers
-	static FGameplayTag CreateTagFromParts(const TArray<FString>& Parts, int32 NumDetail);
-	static TArray<FString> CreatePartsFromTag(FGameplayTag Tag);
-	static TSet<ARegionVolume*> GetChildRegionVolumesByTag(const UObject* WorldContext, FGameplayTag RegionTag);
-	static TSet<ARegionVolume*> GetParentRegionVolumesByTag(const UObject* WorldContext, FGameplayTag RegionTag);
-	static TSet<ARegionVolume*> GetAllRegionVolumes(const UObject* WorldContext);
-
-	//Location To Region
-	UFUNCTION(BlueprintCallable)
-	TSet<ARegionVolume*> GetContainingVolumes(FVector Location) const;
-	UFUNCTION(BlueprintCallable)
-	TSet<FGameplayTag> GetContainingRegions(FVector Location) const;
-	UFUNCTION(BlueprintCallable)
-	FGameplayTag GetRelevantRegion(FVector Location) const;
-
-	UFUNCTION(BlueprintCallable)
-	void ForceResetCache() const;
-
-	//Region To Location
-	UFUNCTION(BlueprintCallable)
-	FVector ProjectPointToNavigationInRegion(UPARAM(meta=(Categories="Game.Region")) FGameplayTag RegionTag);
-	UFUNCTION(BlueprintCallable)
-	FVector GetRegionCenterPoint(UPARAM(meta=(Categories="Game.Region")) FGameplayTag RegionTag);
-	UFUNCTION(BlueprintCallable)
-	FVector GetRegionExtents(UPARAM(meta=(Categories="Game.Region")) FGameplayTag RegionTag);	
-	UFUNCTION(BlueprintCallable)
-	FTransform GetRegionTransform(UPARAM(meta=(Categories="Game.Region")) FGameplayTag RegionTag);
+	TSet<ARegionVolume*> FindAllRegionVolumes() const;
 	
-	UFUNCTION(BlueprintCallable)
-	void RegisterVolume(ARegionVolume* Volume);
-	UFUNCTION(BlueprintCallable)
-	void DeregisterVolume(ARegionVolume* Volume);
-	
-protected:
-	TSet<ARegionVolume*> GetVolumesByTag(const FGameplayTag& Tag) const;
+	//Region Objects
+	TArray<UObject*> GetAllRegionObjects() const;
+	void ReevaluateAllRegionObjects() const;
+	bool ReevaluateRegionObject(UObject* Object) const;
 
+	//Extern Actions
+	UFUNCTION(BlueprintCallable)
+	void RefreshRegions();
+
+	//Gets
+	UFUNCTION(BlueprintCallable)
+	TSet<URegion*> GetAllRegions() const;
+	UFUNCTION(BlueprintCallable)
+	FGameplayTagContainer GetAllRegionTags() const;
+	UFUNCTION(BlueprintCallable)
+	TSet<ARegionVolume*> GetAllRegionVolumes() const;
+	
+	//Region Gets
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region (By Tag)", meta = (Categories = "Regions.Areas", AdvancedDisplay = 1))
+	URegion* GetRegionByTag(FGameplayTag RegionTag, bool AllowParents = true) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region (By Location)", meta = (AdvancedDisplay = 1))
+	URegion* GetRegionByLocation(FVector Location, ERegionTypes DesiredType = ERegionTypes::Room) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region (By Volume)", meta = (AdvancedDisplay = 2))
+	URegion* GetRegionByVolume(FVector Location, FVector BoxExtent, ERegionTypes DesiredType = ERegionTypes::Room) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region (By Actor)")
+	URegion* GetRegionByActor(AActor* Actor) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region (By Interface)")
+	URegion* GetRegionByInterface(UObject* Object) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region (By Tracker)")
+	URegion* GetRegionByTracker(URegionTracker* Tracker) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region (By Player State)")
+	URegion* GetRegionByState(APlayerState* PlayerState) const;
+
+	//Region Tag Gets
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region Tag (By Location)", meta = (AdvancedDisplay = 1))
+	FGameplayTag GetRegionTagByLocation(FVector Location, ERegionTypes DesiredType = ERegionTypes::Room) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region Tag (By Volume)", meta = (AdvancedDisplay = 2))
+	FGameplayTag GetRegionTagByVolume(const FVector Location, const FVector BoxExtent, ERegionTypes DesiredType = ERegionTypes::Room) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region Tag (By Actor)")
+	FGameplayTag GetRegionTagByActor(AActor* Actor) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region Tag (By Interface)")
+	FGameplayTag GetRegionTagByInterface(UObject* Object) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region Tag (By Tracker)")
+	FGameplayTag GetRegionTagByTracker(URegionTracker* Tracker) const;
+	UFUNCTION(BlueprintCallable, DisplayName = "Get Region Tag (By Player State)")
+	FGameplayTag GetRegionTagByState(APlayerState* PlayerState) const;
+	
 private:
+
 	UPROPERTY(Transient)
-	mutable TArray<TWeakObjectPtr<ARegionVolume>> CachedRegionVolumes;
+	TMap<FGameplayTag, TObjectPtr<URegion>> RegionMap;
+
+	UPROPERTY(Transient)
+	FRegionModuleDefaults ModuleDefaults {};
 	
-	void BuildCache() const;
+	URegion* CreateNewRegion(FGameplayTag RegionTag);
+	void CreateRegionModules(URegion* Region);
+	void DestroyRegion(FGameplayTag RegionTag);
+	void DestroyRegion(URegion* Region);
+
+#pragma region Volumes
+protected:
+
+	friend ARegionVolume;
+
+	//ONLY FOR REGION VOLUMES TO CALL
+	void RegisterVolume(ARegionVolume* Volume);
+	void DeregisterVolume(ARegionVolume* Volume);
+
+	bool EnterRegionVolume(URegionTracker* Tracker, const ARegionVolume* Volume) const;
+	bool ExitRegionVolume(URegionTracker* Tracker, const ARegionVolume* Volume) const;
+#pragma endregion
 
 #pragma region Editor
 #if WITH_EDITOR
 public:
 	UFUNCTION()
-	void ResetAllHighlights(UObject* WorldContext);
+	void ShowAllRegions();
 	UFUNCTION()
-	void HighlightHierarchy(UObject* WorldContext, FGameplayTag RegionTag);
+	void HideAllRegions();
+	UFUNCTION()
+	void HighlightRegion(FGameplayTag Region, bool bHideChildren = true);
+	
+	UFUNCTION()
+	void BakeRegions();
+	UFUNCTION()
+	void BakeRegion(FGameplayTag RegionTag);
+
+	UFUNCTION()
+	void ForceRefreshRegions();
+
+private:
+	void BakeRegion(URegion* Region);
+
 #endif
 #pragma endregion
 };
-
-

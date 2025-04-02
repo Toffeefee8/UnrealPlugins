@@ -1,6 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-
 #include "DebugSettings.h"
 
 bool UDebugSettings::ShouldDebug(FGameplayTag DebugTagIn, EDebugDisplayType DebugTypeIn) const
@@ -28,7 +25,17 @@ bool UDebugSettings::ShouldDebug(FGameplayTag DebugTagIn, EDebugDisplayType Debu
 				return true;
 		}
 	}
-	
+
+	switch (DebugTypeIn) {
+		case EDebugDisplayType::Log:
+			return bLogByDefault;
+		case EDebugDisplayType::Print:
+			return bPrintByDefault;
+		case EDebugDisplayType::Visual:
+			return bVisualByDefault;
+		case EDebugDisplayType::Sound:
+			return bSoundByDefault;
+	}
 	return false;
 }
 

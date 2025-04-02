@@ -1,5 +1,3 @@
-
-
 #include "Structs/Probability.h"
 
 void FProbability::SetProbability(double InProbability, double MaxValue)

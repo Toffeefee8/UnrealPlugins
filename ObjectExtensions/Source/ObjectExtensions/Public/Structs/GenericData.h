@@ -16,11 +16,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Data")
 	int32 IntValue = 0;
 	UPROPERTY(BlueprintReadWrite, Category = "Data")
-	FString StringValue  = "";
+	FString StringValue = "";
 	UPROPERTY(BlueprintReadWrite, Category = "Data")
-	FVector VectorValue;
+	FVector VectorValue = FVector();
 	UPROPERTY(BlueprintReadWrite, Category = "Data")
-	TObjectPtr<UObject> ObjectValue = nullptr;
+	TObjectPtr<UObject> ObjectValue = {};
 
 	float GetAllNumbers() const;
 

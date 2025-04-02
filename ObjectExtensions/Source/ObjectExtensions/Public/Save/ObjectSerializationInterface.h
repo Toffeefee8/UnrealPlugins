@@ -1,6 +1,4 @@
-﻿// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"

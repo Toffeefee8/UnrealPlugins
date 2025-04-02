@@ -1,5 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
 #include "Save/ObjectSerializationLibrary.h"
 #include "Save/ObjectSerializationInterface.h"
 #include "Serialization/MemoryWriter.h"

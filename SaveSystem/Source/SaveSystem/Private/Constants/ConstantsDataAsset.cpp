@@ -1,7 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Constants/ConstantsDataAsset.h"
+﻿#include "Constants/ConstantsDataAsset.h"
 
 #include "Constants/Configs/ConstantConfigs.h"
 

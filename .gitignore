@@ -4,6 +4,9 @@
 # Mac
 *.DS?Store
 
+#Rider
+.idea
+
 # Compiled Object files
 *.slo
 *.lo

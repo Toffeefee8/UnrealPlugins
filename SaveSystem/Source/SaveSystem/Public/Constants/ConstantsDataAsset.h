@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
@@ -21,5 +19,5 @@ public:
 	TArray<UConstantConfigs*> GetAllConfigsOfType(const TSubclassOf<UConstantConfigs>& Class) const;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced)
-	TArray<UConstantConfigs*> Configs {};
+	TArray<TObjectPtr<UConstantConfigs>> Configs {};
 };

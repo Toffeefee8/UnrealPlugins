@@ -1,5 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
 #pragma once
 
 UENUM(Blueprintable, BlueprintType)

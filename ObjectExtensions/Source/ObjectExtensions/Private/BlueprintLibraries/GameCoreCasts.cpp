@@ -1,5 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
 #include "BlueprintLibraries/GameCoreCasts.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
