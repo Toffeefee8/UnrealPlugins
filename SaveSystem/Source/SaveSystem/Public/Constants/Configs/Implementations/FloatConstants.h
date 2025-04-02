@@ -13,7 +13,7 @@ class SAVESYSTEM_API UFloatConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static float GetConstantTagToText(FGameplayTag FloatTag);
 
 protected:

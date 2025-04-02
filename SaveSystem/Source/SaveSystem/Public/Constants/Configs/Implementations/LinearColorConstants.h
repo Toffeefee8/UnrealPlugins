@@ -13,7 +13,7 @@ class SAVESYSTEM_API ULinearColorConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FLinearColor GetConstantLinearColor(FGameplayTag LinearColorTag);
 
 protected:

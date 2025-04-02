@@ -13,7 +13,7 @@ class SAVESYSTEM_API UFTextConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FText GetConstantText(FGameplayTag FTextTag);
 
 protected:

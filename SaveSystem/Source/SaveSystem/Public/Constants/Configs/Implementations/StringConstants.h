@@ -13,7 +13,7 @@ class SAVESYSTEM_API UStringConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FString GetConstantString(FGameplayTag StringTag);
 
 protected:

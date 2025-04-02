@@ -13,7 +13,7 @@ class SAVESYSTEM_API UIntConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static int GetConstantInt(FGameplayTag IntTag);
 
 protected:

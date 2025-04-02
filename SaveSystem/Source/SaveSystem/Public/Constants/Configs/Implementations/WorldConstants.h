@@ -13,7 +13,7 @@ class SAVESYSTEM_API UWorldConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static TSoftObjectPtr<UWorld> GetConstantWorld(FGameplayTag WorldTag);
 
 protected:

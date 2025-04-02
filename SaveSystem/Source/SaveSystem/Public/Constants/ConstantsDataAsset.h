@@ -21,5 +21,5 @@ public:
 	TArray<UConstantConfigs*> GetAllConfigsOfType(const TSubclassOf<UConstantConfigs>& Class) const;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced)
-	TArray<UConstantConfigs*> Configs {};
+	TArray<TObjectPtr<UConstantConfigs>> Configs {};
 };

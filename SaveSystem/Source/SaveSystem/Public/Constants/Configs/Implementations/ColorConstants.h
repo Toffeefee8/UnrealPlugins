@@ -13,7 +13,7 @@ class SAVESYSTEM_API UColorConstants : public UConstantConfigs
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FColor GetConstantColor(FGameplayTag ColorTag);
 
 protected:
