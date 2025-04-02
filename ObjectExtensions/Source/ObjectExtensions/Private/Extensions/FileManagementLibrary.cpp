@@ -1,6 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-
 #include "Extensions/FileManagementLibrary.h"
 #include "Misc/Paths.h"
 #include "HAL/PlatformFileManager.h"

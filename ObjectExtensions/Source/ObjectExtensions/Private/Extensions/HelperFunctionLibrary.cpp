@@ -1,8 +1,8 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
 #include "Extensions/HelperFunctionLibrary.h"
 
 #include "GameplayTagsManager.h"
 #include "GameplayTagContainer.h"
+#include "NavigationSystem.h"
 #include "Engine/LevelStreamingDynamic.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -35,6 +35,33 @@ ERelevanceType UHelperFunctionLibrary::GetRelevanceController(AController* Contr
 	}
 	
 	return Simulated;
+}
+
+FString UHelperFunctionLibrary::RemoveParentTagsFromTag(FGameplayTag SourceTag, FGameplayTag ParentToRemove)
+{
+	const FString SourceString = SourceTag.ToString();
+	const FString ParentString = ParentToRemove.ToString();
+	
+	if (!SourceString.StartsWith(ParentString))
+	{
+		return SourceString;
+	}
+	
+	if (SourceString.Equals(ParentString, ESearchCase::CaseSensitive))
+	{
+		return SourceString;
+	}
+	
+	const int32 ParentLen = ParentString.Len();
+
+
+	int32 RemoveLen = ParentLen;
+	if (SourceString.IsValidIndex(ParentLen) && SourceString[ParentLen] == TEXT('.'))
+	{
+		RemoveLen = ParentLen + 1;
+	}
+	
+	return SourceString.Mid(RemoveLen);
 }
 
 bool UHelperFunctionLibrary::GetLocalAuthority(const UObject* WorldContextObject)
@@ -156,6 +183,15 @@ TSoftObjectPtr<UWorld> UHelperFunctionLibrary::GetWorldSoftObject(ULevel* Level)
 	
 	return TSoftObjectPtr<UWorld>(WorldSoftObjectPath);
 }
+
+UObject* UHelperFunctionLibrary::GetDefaultObjectBP(TSubclassOf<UObject> ActorClass)
+{
+	if (!IsValid(ActorClass))
+		return nullptr;
+	
+	return ActorClass->GetDefaultObject();
+}
+
 int UHelperFunctionLibrary::GetMaxDecimalPlaces(TArray<float> FloatArray)
 {
 	int MaxDecimalPlaces = 0;
@@ -221,5 +257,84 @@ void UHelperFunctionLibrary::UnloadAllValidLevels(TArray<ULevelStreamingDynamic*
 			&& (AdditionalConditions == nullptr || AdditionalConditions(Level)))
 			Level->SetIsRequestingUnloadAndRemoval(true);
 	}
+}
+
+TArray<FVector> UHelperFunctionLibrary::GeneratePointsOnCircleProjected(
+	const UObject* WorldContextObject,
+	const FVector& Center,
+	float CircleRadius,
+	const FVector& Normal,
+	const int32 NumPoints,
+	const bool bProjectToNavMesh,
+	const float ProjectionRadius)
+{
+	TArray<FVector> Points;
+	if (NumPoints <= 0) return Points;
+
+	FVector NormalizedNormal = Normal.GetSafeNormal();
+	FQuat RotationQuat = FQuat::FindBetweenNormals(FVector::UpVector, NormalizedNormal);
+	float AngleStep = 2.0f * PI / NumPoints;
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	if (!World) return Points;
+
+	UNavigationSystemV1* NavSys = bProjectToNavMesh ? FNavigationSystem::GetCurrent<UNavigationSystemV1>(World) : nullptr;
+
+	for (int32 i = 0; i < NumPoints; ++i)
+	{
+		float Angle = i * AngleStep;
+		FVector PointPosition = FVector(FMath::Cos(Angle) * CircleRadius, FMath::Sin(Angle) * CircleRadius, 0.0f);
+		FVector RotatedPoint = RotationQuat.RotateVector(PointPosition);
+		FVector StartPoint = Center + RotatedPoint;
+		FVector EndPoint = StartPoint + (NormalizedNormal * ProjectionRadius); // Raycast in normal direction
+
+		FHitResult HitResult;
+		FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(GeneratePointsOnCircleProjected), true);
+		if (World->LineTraceSingleByChannel(HitResult, StartPoint, EndPoint, ECC_Visibility, QueryParams))
+		{
+			FVector ProjectedPoint = HitResult.ImpactPoint;
+
+			// Optional NavMesh projection
+			if (bProjectToNavMesh && NavSys)
+			{
+				FNavLocation NavLocation;
+				if (NavSys->ProjectPointToNavigation(ProjectedPoint, NavLocation, FVector(ProjectionRadius)))
+				{
+					Points.Add(NavLocation.Location);
+				}
+				else
+				{
+					Points.Add(ProjectedPoint);
+				}
+			}
+			else
+			{
+				Points.Add(ProjectedPoint);
+			}
+		}
+		else
+		{
+			// If no hit, use the end point as fallback and attempt NavMesh projection if requested.
+			FVector FallbackPoint = EndPoint;
+			if (bProjectToNavMesh && NavSys)
+			{
+				FNavLocation NavLocation;
+				if (NavSys->ProjectPointToNavigation(FallbackPoint, NavLocation, FVector(ProjectionRadius)))
+				{
+					Points.Add(NavLocation.Location);
+				}
+				else
+				{
+					Points.Add(FallbackPoint);
+				}
+			}
+			else
+			{
+				Points.Add(FallbackPoint);
+			}
+		}
+	}
+
+	return Points;
 }
  

@@ -203,5 +203,5 @@ TSharedRef<STextBlock> EditorHelpers::MakeDefaultEditorText(const FString& Text)
 	return SNew(STextBlock)
 	.Text(FText::FromString(Text))
 	.Font(IDetailLayoutBuilder::GetDetailFont())
-	.Justification(ETextJustify::Center);
+	.Justification(ETextJustify::Type::Left);
 }

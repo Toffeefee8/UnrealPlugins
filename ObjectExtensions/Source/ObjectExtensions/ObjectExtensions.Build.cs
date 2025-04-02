@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 using UnrealBuildTool;
 
 public class ObjectExtensions : ModuleRules
@@ -23,6 +21,7 @@ public class ObjectExtensions : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"NavigationSystem"
 			}
 			);
 	}
