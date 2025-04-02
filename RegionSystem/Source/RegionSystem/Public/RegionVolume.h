@@ -1,11 +1,36 @@
-﻿// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "RegionSubsystem.h"
+#include "RegionSystem.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
+#include "Structs/RegionTypes.h"
 #include "RegionVolume.generated.h"
+
+USTRUCT(BlueprintType)
+struct FRegionPOIData
+{
+	GENERATED_BODY()
+
+public:
+	bool IsValid() const
+	{
+		return Location != FVector::ZeroVector;
+	}
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector Location = FVector::ZeroVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FVector> RelevantLocations {};
+
+	// Iterator functions
+	TArray<FVector>::RangedForIteratorType begin() { return RelevantLocations.begin(); }
+	TArray<FVector>::RangedForIteratorType end() { return RelevantLocations.end(); }
+	TArray<FVector>::RangedForConstIteratorType begin() const { return RelevantLocations.begin(); }
+	TArray<FVector>::RangedForConstIteratorType end() const { return RelevantLocations.end(); }
+};
 
 class USphereComponent;
 class UTextRenderComponent;
@@ -13,7 +38,7 @@ class URegionEditorSubsystem;
 class URegionSubsystem;
 class UBoxComponent;
 
-UCLASS(Blueprintable, PrioritizeCategories = ("Region"))
+UCLASS(Blueprintable, PrioritizeCategories = ("Regions"))
 class REGIONSYSTEM_API ARegionVolume : public AActor
 {
 	GENERATED_BODY()
@@ -22,76 +47,47 @@ public:
 	ARegionVolume();
 
 	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void Destroyed() override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+#pragma region Functions
+	
+	UFUNCTION(BlueprintCallable)
+	TArray<UObject*> GetOverlappingInterfaceObjects(TSubclassOf<UInterface> InterfaceClass) const;
+	template<typename T>
+	TArray<UObject*> GetOverlappingInterfaceObjects() const;
+	TArray<AActor*> GetAllActorsInRegion() const;
+	
+	//RegionTag
 	UFUNCTION(BlueprintCallable)
 	FGameplayTag GetRegionTag() const;
 	UFUNCTION(BlueprintCosmetic)
-	int32 GetRegionDepth() const;
-	UFUNCTION(BlueprintCallable)
-	bool IsParentRegion(UPARAM(meta=(Categories="Region")) FGameplayTag InRegionTag) const;
-	UFUNCTION(BlueprintCallable)
-	bool IsChildRegion(UPARAM(meta=(Categories="Region")) FGameplayTag InRegionTag) const;
-	UFUNCTION(BlueprintCallable)
-	bool IsRegionExact(UPARAM(meta=(Categories="Region")) FGameplayTag InRegionTag) const;
+	int8 GetRegionDepth() const;
 
+	//RegionType
 	UFUNCTION(BlueprintCallable)
-	bool Contains(FVector Location) const;
+	ERegionTypes GetRegionType() const;
 
+	//Extents
 	UFUNCTION(BlueprintCallable)
 	FVector GetBoxExtent() const;
 	UFUNCTION(BlueprintCallable)
-	FVector GetCenterPoint() const;
+	bool Contains(FVector Location) const;
+	UFUNCTION(BlueprintCallable)
+	bool ContainsFully(FVector Location, FVector BoxExtent) const;
 
-#pragma region Operators
-	friend bool operator<(const ARegionVolume& Lhs, const ARegionVolume& RHS)
-	{
-		if (Lhs.GetRegionDepth() == RHS.GetRegionDepth())
-			return Lhs.Priority < RHS.Priority;
-		
-		return Lhs.GetRegionDepth() < RHS.GetRegionDepth();
-	}
-
-	friend bool operator<=(const ARegionVolume& Lhs, const ARegionVolume& RHS)
-	{
-		return !(RHS < Lhs);
-	}
-
-	friend bool operator>(const ARegionVolume& Lhs, const ARegionVolume& RHS)
-	{
-		return RHS < Lhs;
-	}
-
-	friend bool operator>=(const ARegionVolume& Lhs, const ARegionVolume& RHS)
-	{
-		return !(Lhs < RHS);
-	}
-#pragma endregion
+	//POI
+	UFUNCTION(BlueprintCallable)
+	TArray<FRegionPOIData> GetPOIData() const;
 
 protected:
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UBoxComponent* RegionBox;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USphereComponent* RegionCenter;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UTextRenderComponent* RegionText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Region", meta = (Categories = "Region"))
-	FGameplayTag RegionTag;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Region", meta = (ClampMin = 0))
-	int Priority = 0;
-	
+		
 	//Overlaps
 	UFUNCTION()
-	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-						UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-						bool bFromSweep, const FHitResult& SweepResult);
-	
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
-	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-						UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	//Register
 	UFUNCTION()
@@ -101,22 +97,71 @@ protected:
 
 	UFUNCTION()
 	float GetTextScale() const;
+	
+#pragma endregion
+
+#pragma region Properties
+
+protected:
+	//Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> RegionBox = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Regions", meta = (Categories = "Regions.Areas"))
+	FGameplayTag RegionTag = FGameplayTag();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Regions|POI")
+	TArray<FRegionPOIData> POIData {};
 
 private:
-
+	
 	friend URegionSubsystem;
 	
 	//Do Not Modify Value, For Region Subsystem to Handle
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	bool bRegistered = false;
+	
+#pragma endregion
 
-#pragma region Editor Tools
+#pragma region Editor
+#if	WITH_EDITOR
+	
 public:
-#if WITH_EDITOR
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Region")
-	void DisplayHierarchy();
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Region")
-	void ClearHighlights();
+	virtual void PostEditMove(bool bFinished) override;
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	
+	UFUNCTION(CallInEditor, Category = "Regions")
+	void ForceAutoTag();
+	void ForceParentTag();
+
+	UFUNCTION(CallInEditor, Category = "Regions")
+	void SetExtension();
+	void Bake();
+	
+	void HideVolume();
+	void ShowVolume();
+	void SetHighlight(uint8 State);
+
+	void SetRegionText();
+	
+#endif
+#if WITH_EDITORONLY_DATA
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Regions")
+	FString CustomRegionExtension = "";
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Regions")
+	bool bAutoSetRegion = true;
+	UPROPERTY(VisibleAnywhere, Category = "Regions")
+	FGameplayTag ParentRegionTag = FGameplayTag();
+	UPROPERTY(VisibleAnywhere, Category = "Regions")
+	ERegionTypes RegionType = ERegionTypes::Room;
+
+	static const FColor DefaultVolumeColor;
+	static const int32 DefaultVolumeThickness;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UTextRenderComponent> RegionText = nullptr;
+	
 #endif
 #pragma endregion
 
@@ -127,3 +172,30 @@ public:
 #endif
 #pragma endregion
 };
+
+template <typename T>
+TArray<UObject*> ARegionVolume::GetOverlappingInterfaceObjects() const
+{
+	static_assert(TIsDerivedFrom<T, UInterface>::Value, "GetOverlappingInterfaceActors: Template parameter T must be a UInterface type");
+
+	TArray<AActor*> AllActors = GetAllActorsInRegion();
+	TArray<UObject*> ReturnArray;
+
+	for (AActor* Actor : AllActors)
+	{
+		if (!Actor)
+			continue;
+		
+		if (Actor->Implements<T>())
+			ReturnArray.Add(Actor);
+		
+		TArray<UActorComponent*> Components;
+		Actor->GetComponents(Components);
+		for (UActorComponent* Component : Components)
+		{
+			if (Component && Component->Implements<T>())
+				ReturnArray.Add(Component);
+		}
+	}
+	return ReturnArray;
+}

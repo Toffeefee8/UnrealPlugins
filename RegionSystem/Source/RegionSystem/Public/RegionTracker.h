@@ -1,53 +1,63 @@
-﻿// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "RegionObjectInterface.h"
+#include "Components/PlayerStateComponent.h"
 #include "RegionTracker.generated.h"
 
 
+class URegion;
 class UAbilitySystemComponent;
-class ARegionVolume;
-
-DECLARE_LOG_CATEGORY_EXTERN(LogRegions, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRegionChange, FGameplayTag, RegionTag);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class REGIONSYSTEM_API URegionTracker : public UActorComponent
+class REGIONSYSTEM_API URegionTracker : public UGameFrameworkComponent, public IRegionObject
 {
 	GENERATED_BODY()
 
+	//Region Object Interface
+	virtual void ForceSetRegion_Implementation(FGameplayTag NewRegion) override;
+	virtual FGameplayTag GetRegionTag_Implementation() const override;
+	virtual void GetCheckData_Implementation(FVector& CheckLocation, ERegionTypes& DesiredType, bool& bDisableRuntimeChecks) const override;
+	//Region Object Interface
+
 public:
 
-	UPROPERTY(BlueprintAssignable, Category="Region")
+	virtual void BeginPlay() override;
+
+	UPROPERTY(BlueprintAssignable, Category="Regions")
 	FOnRegionChange OnRegionEnter;
-	UPROPERTY(BlueprintAssignable, Category="Region")
+	UPROPERTY(BlueprintAssignable, Category="Regions")
 	FOnRegionChange OnRegionExit;
 	
 	UFUNCTION(BlueprintCallable)
 	bool IsInRegion(FGameplayTag Tag) const;
 	UFUNCTION(BlueprintCallable)
-	TSet<FGameplayTag> GetRegions() const;
+	FGameplayTagContainer GetRegionTags() const;
 	UFUNCTION(BlueprintCallable)
-	FGameplayTag GetRelevantRegion() const;
+	FGameplayTag GetContainingRegionTag() const;
 	UFUNCTION(BlueprintCallable)
-	TSet<ARegionVolume*> GetRegionRefs() const;
+	FGameplayTag GetRegionTagOfType(ERegionTypes DesiredType) const;
+	UFUNCTION(BlueprintCallable)
+	TArray<URegion*> GetRegionRefs() const;
+	UFUNCTION(BlueprintCallable)
+	bool IsInValidRegion() const;
 
 protected:
 
-	friend ARegionVolume;
+	friend URegion;
 
 	UFUNCTION()
-	void AddRegion(ARegionVolume* Volume);
+	void AddRegion(URegion* Region);
 	UFUNCTION()
-	void RemoveRegion(ARegionVolume* Volume);
+	void RemoveRegion(URegion* Region);
 	UFUNCTION()
 	FGameplayTag CalculateRelevantRegion() const;
 	
 	UPROPERTY(Transient)
-	TSet<ARegionVolume*> RegionRefs;
+	TSet<TWeakObjectPtr<URegion>> RegionRefs;
 	UPROPERTY(Transient)
 	mutable FGameplayTag CachedRegionTag;
 	
