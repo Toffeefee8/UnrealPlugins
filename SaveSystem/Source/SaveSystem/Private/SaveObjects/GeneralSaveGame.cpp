@@ -1,5 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
 #include "SaveObjects/GeneralSaveGame.h"
 
 #include "GameplayTagContainer.h"

@@ -1,6 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-
 #include "SaveSubSystem.h"
 
 #include "DebugFunctionLibrary.h"

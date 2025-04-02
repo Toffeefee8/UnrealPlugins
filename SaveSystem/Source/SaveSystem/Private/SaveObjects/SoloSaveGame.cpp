@@ -1,6 +1,3 @@
-// Copyright Phoenix Dawn Development LLC. All Rights Reserved.
-
-
 #include "SaveObjects/SoloSaveGame.h"
 
 void USoloSaveGame::SaveFloat(FGameplayTag Tag, float Value)
